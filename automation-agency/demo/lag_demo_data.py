@@ -28,38 +28,38 @@ KUNDER_BEDRIFT = [
 ]
 
 INNTEKT_KATEGORIER = [
-    "Rorleggerarbeid", "Vareoppdrag", "Serviceavtale", "Akuttoppdrag"
+    "Rørleggerarbeid", "Vareoppdrag", "Serviceavtale", "Akuttoppdrag"
 ]
 
 UTGIFT_KATEGORIER = [
     "Materialer", "Drivstoff", "Forsikring", "Telefon/internett",
-    "Verktoy", "Lonn assistent"
+    "Verktøy", "Lønn assistent"
 ]
 
 BESKRIVELSER_INNTEKT = {
-    "Rorleggerarbeid": [
-        "Utskifting av vannror kjokken", "Installasjon ny dusj",
-        "Rorlegging baderom", "Reparasjon vannlekkasje", "Ny varmtvannsbereder",
-        "Utskifting toalett", "Legging nye avlopsror", "Tilkobling oppvaskmaskin"
+    "Rørleggerarbeid": [
+        "Utskifting av vannrør kjøkken", "Installasjon ny dusj",
+        "Rørlegging baderom", "Reparasjon vannlekkasje", "Ny varmtvannsbereder",
+        "Utskifting toalett", "Legging nye avløpsrør", "Tilkobling oppvaskmaskin"
     ],
     "Vareoppdrag": [
         "Levering og montering kraner", "Installasjon radiatorer",
         "Montering baderomsinnredning", "Levering varmesystem"
     ],
     "Serviceavtale": [
-        "Arsservice varmeanlegg", "Kvartalsvis vedlikehold", "Service borettslag jan",
-        "Arsavtale vedlikehold", "Service varmepumpe"
+        "Årsservice varmeanlegg", "Kvartalsvis vedlikehold", "Service borettslag jan",
+        "Årsavtale vedlikehold", "Service varmepumpe"
     ],
     "Akuttoppdrag": [
-        "Akutt rorbrudd natt", "Akutt vannlekkasje helg",
-        "Hasteoppdrag oversvommet kjeller", "Akutt reparasjon helligdag"
+        "Akutt rørbrudd natt", "Akutt vannlekkasje helg",
+        "Hasteoppdrag oversvømt kjeller", "Akutt reparasjon helligdag"
     ]
 }
 
 BESKRIVELSER_UTGIFT = {
     "Materialer": [
-        "Kobberrorer og koplinger", "Isolasjonsmateriale", "Pakninger og tetninger",
-        "Rorfittings diverse", "Ventiler og kran-deler", "Avlopsdeler"
+        "Kobbrerør og koplinger", "Isolasjonsmateriale", "Pakninger og tetninger",
+        "Rørfittings diverse", "Ventiler og kran-deler", "Avløpsdeler"
     ],
     "Drivstoff": [
         "Diesel firmabil januar", "Bensin og diesel", "Drivstoff arbeidsuke",
@@ -71,13 +71,13 @@ BESKRIVELSER_UTGIFT = {
     "Telefon/internett": [
         "Mobilabonnement", "Internett kontor", "Telefon og data"
     ],
-    "Verktoy": [
-        "Nytt boreverktoy", "Reservedeler maskinpark", "Sikkerhetsutsstyr",
-        "Diverse handverktoy"
+    "Verktøy": [
+        "Nytt boreverktøy", "Reservedeler maskinpark", "Sikkerhetsutstyr",
+        "Diverse håndverktøy"
     ],
-    "Lonn assistent": [
-        "Lonn larlingsassistent uke 1-2", "Lonn larling uke 3-4",
-        "Overtidsbetaling assistent", "Lonn vikar"
+    "Lønn assistent": [
+        "Lønn lærlingassistent uke 1-2", "Lønn lærling uke 3-4",
+        "Overtidsbetaling assistent", "Lønn vikar"
     ]
 }
 
@@ -118,7 +118,7 @@ def generer_rad(ar, maned, fakturanr_teller):
         beskrivelse = random.choice(BESKRIVELSER_UTGIFT[kategori])
         kunde = "Intern utgift"
 
-        if kategori == "Lonn assistent":
+        if kategori == "Lønn assistent":
             belop = -random.randint(8000, 15000)
         elif kategori == "Forsikring":
             belop = -random.randint(2000, 5000)
