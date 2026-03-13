@@ -2,4 +2,4 @@ pandas
 openpyxl
 anthropic
 fpdf2
-streamlit
+streamlit==1.44.1
