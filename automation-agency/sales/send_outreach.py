@@ -128,7 +128,7 @@ def lagre_excel(df: pd.DataFrame, fil: Path) -> None:
             elif status_celle.value == "Åpnet":
                 status_celle.fill = gul
 
-    print(f"  ✓ Excel lagret: {fil.name}")
+    print(f"  OK Excel lagret: {fil.name}")
 
 # ── Emnelinjer per bransje ─────────────────────────────────────────────────────
 
@@ -179,9 +179,9 @@ def vis_statistikk(df: pd.DataFrame) -> None:
     totalt     = len(df)
     sendt      = (df["Status"] == "Sendt").sum()
     ikke_sendt = totalt - sendt
-    print(f"\n{'─'*50}")
-    print(f"  📊 STATUS-OVERSIKT")
-    print(f"{'─'*50}")
+    print(f"\n{'-'*50}")
+    print(f"  STATUS-OVERSIKT")
+    print(f"{'-'*50}")
     print(f"  Totalt antall kunder : {totalt}")
     print(f"  Sendt outreach       : {sendt}")
     print(f"  Ikke kontaktet       : {ikke_sendt}")
@@ -190,14 +190,14 @@ def vis_statistikk(df: pd.DataFrame) -> None:
         siste = df[df["Status"] == "Sendt"].tail(5)
         for _, rad in siste.iterrows():
             print(f"    #{int(rad['Nr']):>3}  {rad['Bedriftsnavn']:<30}  {rad['Kontaktet dato']}")
-    print(f"{'─'*50}\n")
+    print(f"{'-'*50}\n")
 
 # ── Hoved-logikk ──────────────────────────────────────────────────────────────
 
 def main():
-    print("\n" + "═"*55)
-    print("  KABI AUTOMATION — Outreach-skript")
-    print("═"*55)
+    print("\n" + "="*55)
+    print("  KABI AUTOMATION - Outreach-skript")
+    print("="*55)
 
     # Last inn data
     if not EXCEL_FIL.exists():
@@ -209,8 +209,8 @@ def main():
 
     df       = les_excel(EXCEL_FIL)
     meldinger = les_meldinger(OUTREACH_FIL)
-    print(f"  ✓ Lastet {len(df)} kunder fra Excel")
-    print(f"  ✓ Lastet {len(meldinger)} outreach-meldinger\n")
+    print(f"  OK Lastet {len(df)} kunder fra Excel")
+    print(f"  OK Lastet {len(meldinger)} outreach-meldinger\n")
 
     # Vis statistikk
     vis_statistikk(df)
@@ -219,7 +219,7 @@ def main():
     print("  VELG HANDLING:")
     print("  [1]  Send outreach til de neste N ikke-kontaktede kundene")
     print("  [2]  Send til spesifikk kundrekke (f.eks. 1-10)")
-    print("  [3]  Send til én spesifikk kunde (kundnr)")
+    print("  [3]  Send til en spesifikk kunde (kundnr)")
     print("  [4]  Vis statistikk og avslutt")
     print()
 
@@ -292,10 +292,10 @@ def main():
         full_melding = melding_tekst + SIGNATUR
         emne = hent_emne(bransje)
 
-        print(f"  ┌─ Kunde #{nr:>3}: {bedrift} ({by})")
-        print(f"  │  Bransje : {bransje}")
-        print(f"  │  Emne    : {emne}")
-        print(f"  └─ Melding : {melding_tekst[:80]}...")
+        print(f"  Kunde #{nr:>3}: {bedrift} ({by})")
+        print(f"  Bransje : {bransje}")
+        print(f"  Emne    : {emne}")
+        print(f"  Melding : {melding_tekst[:80]}...")
         print()
 
         svar = input("  [ENTER = åpne Gmail | 'hopp' = hopp over | 'ferdig' = avslutt]: ").strip().lower()
@@ -304,24 +304,24 @@ def main():
             print("\n  Avslutter...")
             break
         elif svar == "hopp":
-            print(f"  ↷ Hoppet over #{nr}\n")
+            print(f"  >> Hoppet over #{nr}\n")
             continue
         else:
             # Åpne Gmail
             url = bygg_gmail_url(emne, full_melding)
             webbrowser.open(url)
-            print(f"  ✓ Gmail åpnet for {bedrift}")
+            print(f"  OK Gmail aapnet for {bedrift}")
 
             # Oppdater status
             df.at[idx, "Status"]          = "Sendt"
             df.at[idx, "Kontaktet dato"]  = date.today().strftime("%d.%m.%Y")
             endret += 1
-            print(f"  ✓ Status oppdatert → Sendt ({date.today().strftime('%d.%m.%Y')})\n")
+            print(f"  OK Status oppdatert: Sendt ({date.today().strftime('%d.%m.%Y')})\n")
 
     # Lagre
     if endret > 0:
         lagre_excel(df, EXCEL_FIL)
-        print(f"\n  ✅ {endret} kunde(r) oppdatert og lagret i Excel.\n")
+        print(f"\n  OK {endret} kunde(r) oppdatert og lagret i Excel.\n")
     else:
         print("\n  Ingen endringer lagret.\n")
 
