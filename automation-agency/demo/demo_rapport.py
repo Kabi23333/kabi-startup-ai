@@ -349,6 +349,18 @@ def lagre_pdf_rapport(nokkeltal, ai_sammendrag, df, utfil):
     x_marg = 10
     bredde = 190
 
+    # Sanitize: fjern tegn fpdf2/Helvetica ikke stoetter (norske bokstaver, lange bindestreker, markdown)
+    def til_pdf_tekst(t):
+        t = t.replace("\u2013", "-").replace("\u2014", "-").replace("\u2019", "'")
+        t = t.replace("\u00e6", "ae").replace("\u00f8", "oe").replace("\u00e5", "aa")
+        t = t.replace("\u00c6", "Ae").replace("\u00d8", "Oe").replace("\u00c5", "Aa")
+        t = t.replace("**", "").replace("##", "").replace("# ", "")
+        return t
+
+    tekstlinjer = til_pdf_tekst(ai_sammendrag.replace("\r", ""))
+    x_marg = 10
+    bredde = 190
+
     pdf.set_xy(x_marg, pdf.get_y())
     pdf.set_fill_color(222, 234, 241)
     y_boks_start = pdf.get_y()
@@ -382,7 +394,8 @@ def lagre_pdf_rapport(nokkeltal, ai_sammendrag, df, utfil):
             pdf.set_fill_color(*fill_color)
             pdf.set_text_color(0, 0, 0)
             type_label = "Inntekt" if rad["Totalt"] > 0 else "Utgift"
-            pdf.cell(col_w[0], 6, str(rad["Kategori"]), border=0, fill=True)
+            kat_navn = til_pdf_tekst(str(rad["Kategori"]))
+            pdf.cell(col_w[0], 6, kat_navn, border=0, fill=True)
             pdf.cell(col_w[1], 6, f"{rad['Totalt']:,.0f}", border=0, fill=True, align="R")
             pdf.cell(col_w[2], 6, type_label, border=0, fill=True, align="C")
             pdf.ln()
