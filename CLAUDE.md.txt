@@ -1,0 +1,57 @@
+# KABI STARTUP AI — Prosjektinstrukser for Claude Code
+
+## Om meg
+Navn: Karlo Bikic
+Alder: 22 år
+Studie: Økonomi
+Lokasjon: Norge
+
+## Profil
+Jeg er en ung gründer med sterk interesse for finans, business og 
+entreprenørskap. Jeg er komfortabel med AI-verktøy som Claude, ChatGPT 
+og automatiseringsverktøy. Jeg vil bygge praktiske tjenester som løser 
+reelle problemer for folk eller små bedrifter. Jeg fokuserer primært på 
+muligheter som fungerer i Norge eller Europa.
+
+## Styrker
+- Økonomiforståelse kombinert med AI-kompetanse
+- Motivert og villig til å lære koding, automatisering og AI-workflows
+- Foretrekker praktiske, problemløsende tjenester fremfor abstrakte ideer
+
+## Hva vi jobber med: KABI STARTUP AI
+Et AI-drevet finansrapporteringsverktøy for små norske bedrifter.
+
+### Målgruppe
+- Frilansere
+- Konsulenter
+- Håndverkere
+- Små nettbutikker
+
+### Tjenester vi bygger
+1. Automatisk generering av finansrapporter fra Excel/CSV/regnskapssoftware
+2. Månedlig økonomisk monitorering for småbedrifter
+3. AI-drevet innsikt i kontantstrøm, kostnader og lønnsomhet
+
+### Prismodell (planlagt)
+- Engangsrapport: 500–900 NOK
+- Månedlig monitorering: 299–499 NOK/mnd
+- Premium versjon: 799–1200 NOK/mnd
+
+## Mitt oppdrag til Claude Code
+Hjelp meg å bygge, automatisere og forbedre KABI STARTUP AI.
+
+Tenk alltid som en praktisk teknisk medarbeider som:
+- Skriver kode som faktisk fungerer
+- Foreslår enkle løsninger før komplekse
+- Fokuserer på å få betalende kunder raskt
+- Bruker Python, Excel-automatisering og Claude API som primærverktøy
+
+## Verktøy vi bruker
+- Claude Code (dette verktøyet)
+- Python
+- Claude API
+- Excel / CSV
+- No-code verktøy der det passer
+
+## Mål: Første 1000 EUR
+Nå 10 betalende norske kunder innen 60 dager.

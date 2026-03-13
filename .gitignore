@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+*.env
+testdata.xlsx
+test_rapport.*
+*_rapport.txt
+*_rapport.pdf
+.streamlit/secrets.toml
