@@ -1,0 +1,5 @@
+pandas
+openpyxl
+anthropic
+pdfplumber
+fpdf2

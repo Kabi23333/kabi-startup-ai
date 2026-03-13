@@ -1,17 +1,15 @@
 """
-KABI STARTUP AI — Streamlit-app
-Kjør lokalt: streamlit run app.py
+KABI STARTUP AI - Streamlit-app
+Kjoer med: streamlit run app.py
 """
 
 import os
-import sys
 import tempfile
 
 import anthropic
 import pandas as pd
 import streamlit as st
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from finansrapport import eksporter_pdf, generer_rapport
 
 # ── Sidekonfigurasjon ─────────────────────────────────────────────────────────
@@ -25,9 +23,11 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .kabi-header { background: linear-gradient(135deg, #1e40af, #3b82f6);
-        padding: 2rem; border-radius: 12px; color: white; text-align: center;
-        margin-bottom: 1.5rem; }
+    .kabi-header {
+        background: linear-gradient(135deg, #1e40af, #3b82f6);
+        padding: 2rem; border-radius: 12px; color: white;
+        text-align: center; margin-bottom: 1.5rem;
+    }
     .kabi-header h1 { margin: 0; font-size: 2.2rem; }
     .kabi-header p  { margin: 0.3rem 0 0; opacity: 0.85; }
     </style>
@@ -35,16 +35,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── Hent API-nøkkel (Secrets → env → manuell) ────────────────────────────────
+# ── API-nokkel: Streamlit Secrets → miljovariabel → manuell input ─────────────
 try:
     if "ANTHROPIC_API_KEY" in st.secrets:
         os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
 except Exception:
-    pass  # Ingen secrets konfigurert — går videre
+    pass
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 📋 Slik bruker du appen")
+    st.markdown("## Slik bruker du appen")
     st.markdown(
         "1. Last opp en Excel-fil (.xlsx)\n"
         "2. Rapporten genereres automatisk\n"
@@ -52,29 +52,29 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("**Forventet kolonneformat:**")
-    st.code("Dato | Beskrivelse | Kategori | Beløp", language=None)
-    st.caption("Positive beløp = inntekter\nNegative beløp = utgifter")
+    st.code("Dato | Beskrivelse | Kategori | Belop", language=None)
+    st.caption("Positive belop = inntekter\nNegative belop = utgifter")
     st.divider()
 
-    har_nøkkel = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    har_nokkel = bool(os.environ.get("ANTHROPIC_API_KEY"))
     api_input = st.text_input(
-        "🔑 Anthropic API-nøkkel",
+        "Anthropic API-nokkel",
         type="password",
-        placeholder="Allerede satt" if har_nøkkel else "Lim inn nøkkel her",
-        help="Trengs for AI-innsikt fra Claude. Gratis å opprette på console.anthropic.com",
+        placeholder="Allerede satt" if har_nokkel else "Lim inn nokkel her",
+        help="Trengs for AI-innsikt fra Claude.",
     )
     if api_input:
         os.environ["ANTHROPIC_API_KEY"] = api_input
-        har_nøkkel = True
+        har_nokkel = True
 
-    if not har_nøkkel:
-        st.warning("Uten API-nøkkel hoppes AI-innsikt over.")
+    if not har_nokkel:
+        st.warning("Uten API-nokkel vises ikke AI-innsikt.")
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(
     '<div class="kabi-header">'
-    "<h1>💰 KABI STARTUP AI</h1>"
-    "<p>Finansrapportgenerator for norske småbedrifter</p>"
+    "<h1>KABI STARTUP AI</h1>"
+    "<p>Finansrapportgenerator for norske smabedrifter</p>"
     "</div>",
     unsafe_allow_html=True,
 )
@@ -83,11 +83,11 @@ st.markdown(
 fil = st.file_uploader(
     "Last opp Excel-filen din",
     type=["xlsx", "xls"],
-    help="Excel-fil med kolonnene: Dato, Beskrivelse, Kategori, Beløp",
+    help="Excel-fil med kolonnene: Dato, Beskrivelse, Kategori, Belop",
 )
 
 if fil is None:
-    st.info("⬆️  Last opp en Excel-fil for å komme i gang.")
+    st.info("Last opp en Excel-fil for a komme i gang.")
     st.stop()
 
 # ── Les og valider ────────────────────────────────────────────────────────────
@@ -97,68 +97,79 @@ except Exception as e:
     st.error(f"Kunne ikke lese filen: {e}")
     st.stop()
 
+# Normaliser kolonnenavn til lowercase
 df.columns = [c.strip().lower() for c in df.columns]
-mangler = {"dato", "beskrivelse", "kategori", "beløp"} - set(df.columns)
+
+# Aksepter varianter av "belop" (beloep, belop, beløp)
+belop_kandidater = [
+    c for c in df.columns
+    if "bel" in c and any(x in c for x in ("p", "o", "\u00f8"))
+]
+if belop_kandidater:
+    beste = belop_kandidater[0]
+    if beste != "bel\u00f8p":
+        df = df.rename(columns={beste: "bel\u00f8p"})
+
+mangler = {"dato", "beskrivelse", "kategori", "bel\u00f8p"} - set(df.columns)
 if mangler:
-    st.error(f"❌ Mangler kolonner: **{', '.join(mangler)}**")
-    st.caption("Forventede kolonner: Dato, Beskrivelse, Kategori, Beløp")
+    st.error(f"Mangler kolonner: **{', '.join(mangler)}**")
+    st.caption("Forventede kolonner: Dato, Beskrivelse, Kategori, Belop")
     st.stop()
 
-df["beløp"] = pd.to_numeric(df["beløp"], errors="coerce").fillna(0)
+df["bel\u00f8p"] = pd.to_numeric(df["bel\u00f8p"], errors="coerce").fillna(0)
 df["dato"] = pd.to_datetime(df["dato"], errors="coerce")
 df["kategori"] = df["kategori"].astype(str).str.strip()
 
-inntekter = df[df["beløp"] > 0]
-utgifter = df[df["beløp"] < 0]
-total_inntekt = inntekter["beløp"].sum()
-total_utgift = abs(utgifter["beløp"].sum())
+inntekter = df[df["bel\u00f8p"] > 0]
+utgifter = df[df["bel\u00f8p"] < 0]
+total_inntekt = inntekter["bel\u00f8p"].sum()
+total_utgift = abs(utgifter["bel\u00f8p"].sum())
 resultat = total_inntekt - total_utgift
 margin = (resultat / total_inntekt * 100) if total_inntekt > 0 else 0
 
-# ── Nøkkeltall ────────────────────────────────────────────────────────────────
-st.markdown("### 📊 Sammendrag")
+# ── Nokkeltall ────────────────────────────────────────────────────────────────
+st.markdown("### Sammendrag")
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("💰 Inntekter", f"{total_inntekt:,.0f} kr")
-k2.metric("💸 Utgifter", f"{total_utgift:,.0f} kr")
+k1.metric("Inntekter", f"{total_inntekt:,.0f} kr")
+k2.metric("Utgifter", f"{total_utgift:,.0f} kr")
 k3.metric(
-    "📈 Resultat",
+    "Resultat",
     f"{'+' if resultat >= 0 else ''}{resultat:,.0f} kr",
     delta="Overskudd" if resultat >= 0 else "Underskudd",
     delta_color="normal" if resultat >= 0 else "inverse",
 )
-k4.metric("📉 Margin", f"{margin:.1f}%")
+k4.metric("Margin", f"{margin:.1f}%")
 
 # ── Diagrammer ────────────────────────────────────────────────────────────────
-st.markdown("### 📊 Fordeling")
+st.markdown("### Fordeling")
 col_v, col_h = st.columns(2)
 
 with col_v:
     st.markdown("**Inntekter per kategori**")
     if not inntekter.empty:
-        data = inntekter.groupby("kategori")["beløp"].sum().sort_values(ascending=False)
+        data = inntekter.groupby("kategori")["bel\u00f8p"].sum().sort_values(ascending=False)
         st.bar_chart(data)
 
 with col_h:
     st.markdown("**Utgifter per kategori**")
     if not utgifter.empty:
-        data = utgifter.groupby("kategori")["beløp"].abs().sum().sort_values(ascending=False)
+        data = utgifter.groupby("kategori")["bel\u00f8p"].abs().sum().sort_values(ascending=False)
         st.bar_chart(data)
 
-# ── Månedlig oversikt ─────────────────────────────────────────────────────────
+# ── Manedlig oversikt ─────────────────────────────────────────────────────────
 df_dato = df[df["dato"].notna()].copy()
 if not df_dato.empty:
-    df_dato["Måned"] = df_dato["dato"].dt.to_period("M").astype(str)
-    månedlig = df_dato.groupby("Måned")["beløp"].agg(
+    df_dato["Maned"] = df_dato["dato"].dt.to_period("M").astype(str)
+    manedlig = df_dato.groupby("Maned")["bel\u00f8p"].agg(
         Inntekter=lambda x: x[x > 0].sum(),
         Utgifter=lambda x: abs(x[x < 0].sum()),
     )
-    månedlig["Resultat"] = månedlig["Inntekter"] - månedlig["Utgifter"]
+    manedlig["Resultat"] = manedlig["Inntekter"] - manedlig["Utgifter"]
 
-    if len(månedlig) > 1:
-        st.markdown("### 📅 Månedlig oversikt")
-        # Bruk map() i stedet for applymap() (deprecated i pandas 2.x)
+    if len(manedlig) > 1:
+        st.markdown("### Manedlig oversikt")
         styled = (
-            månedlig.style
+            manedlig.style
             .format("{:,.0f} kr")
             .map(
                 lambda v: "color: green" if v >= 0 else "color: red",
@@ -168,19 +179,19 @@ if not df_dato.empty:
         st.dataframe(styled, use_container_width=True)
 
 # ── AI-innsikt ────────────────────────────────────────────────────────────────
-st.markdown("### 🤖 AI-innsikt fra Claude")
+st.markdown("### AI-innsikt fra Claude")
 
-fil_nøkkel = f"{fil.name}_{fil.size}"
+fil_nokkel = f"{fil.name}_{fil.size}"
 
 
 def bygg_prompt() -> str:
     inntekt_oversikt = (
-        inntekter.groupby("kategori")["beløp"]
+        inntekter.groupby("kategori")["bel\u00f8p"]
         .sum().sort_values(ascending=False)
         .apply(lambda x: f"{x:,.0f} kr").to_string()
     )
     utgift_oversikt = (
-        utgifter.groupby("kategori")["beløp"]
+        utgifter.groupby("kategori")["bel\u00f8p"]
         .sum().abs().sort_values(ascending=False)
         .apply(lambda x: f"{x:,.0f} kr").to_string()
     )
@@ -188,32 +199,25 @@ def bygg_prompt() -> str:
     periode_til = df["dato"].max()
     periode = ""
     if pd.notna(periode_fra) and pd.notna(periode_til):
-        periode = f"{periode_fra.strftime('%d.%m.%Y')} - {periode_til.strftime('%d.%m.%Y')}"
-
-    return f"""Du er en erfaren norsk regnskapsforer og forretningsradgiver.
-Analyser folgende finansdata for en liten norsk bedrift og gi konkret, praktisk innsikt pa norsk.
-
-PERIODE: {periode or 'Ukjent'}
-TOTALE INNTEKTER: {total_inntekt:,.0f} kr
-TOTALE UTGIFTER: {total_utgift:,.0f} kr
-RESULTAT: {'+' if resultat >= 0 else ''}{resultat:,.0f} kr
-FORTJENESTEMARGIN: {margin:.1f}%
-
-INNTEKTER PER KATEGORI:
-{inntekt_oversikt}
-
-UTGIFTER PER KATEGORI:
-{utgift_oversikt}
-
-Gi en analyse pa 4-6 setninger som inkluderer:
-1. Vurdering av lonnsomhet og finansiell helse
-2. Den viktigste styrken og den viktigste risikoen
-3. Ett konkret, handlingsrettet rad for a forbedre resultatet
-
-Svar direkte og enkelt - eieren er ikke regnskapsfaglig. Unnga fagsjargong."""
+        periode = (
+            f"{periode_fra.strftime('%d.%m.%Y')} - {periode_til.strftime('%d.%m.%Y')}"
+        )
+    return (
+        "Du er en erfaren norsk regnskapsforer og forretningsradgiver. "
+        "Analyser folgende finansdata og gi konkret innsikt pa norsk.\n\n"
+        f"PERIODE: {periode or 'Ukjent'}\n"
+        f"TOTALE INNTEKTER: {total_inntekt:,.0f} kr\n"
+        f"TOTALE UTGIFTER: {total_utgift:,.0f} kr\n"
+        f"RESULTAT: {'+' if resultat >= 0 else ''}{resultat:,.0f} kr\n"
+        f"FORTJENESTEMARGIN: {margin:.1f}%\n\n"
+        f"INNTEKTER:\n{inntekt_oversikt}\n\n"
+        f"UTGIFTER:\n{utgift_oversikt}\n\n"
+        "Gi 4-6 setninger: vurder lonnsomhet, nevn styrke og risiko, "
+        "gi ett konkret rad. Svar enkelt - eieren er ikke regnskapsfaglig."
+    )
 
 
-def ai_stream_generator():
+def ai_stream():
     claude = anthropic.Anthropic()
     with claude.messages.stream(
         model="claude-opus-4-6",
@@ -225,42 +229,46 @@ def ai_stream_generator():
             yield delta
 
 
-har_nøkkel_nå = bool(os.environ.get("ANTHROPIC_API_KEY"))
-ny_fil = st.session_state.get("fil_nøkkel") != fil_nøkkel
+har_nokkel_na = bool(os.environ.get("ANTHROPIC_API_KEY"))
+ny_fil = st.session_state.get("fil_nokkel") != fil_nokkel
 
-if not har_nøkkel_nå:
-    st.info("🔑 Legg inn Anthropic API-nøkkel i sidepanelet for å få AI-innsikt.")
-    ai_tekst = "AI-innsikt ikke tilgjengelig — API-nøkkel mangler."
+if not har_nokkel_na:
+    st.info("Legg inn Anthropic API-nokkel i sidepanelet for a fa AI-innsikt.")
+    ai_tekst = "AI-innsikt ikke tilgjengelig - API-nokkel mangler."
 elif ny_fil:
     try:
         with st.container(border=True):
-            ai_tekst = st.write_stream(ai_stream_generator())
+            ai_tekst = st.write_stream(ai_stream())
         st.session_state.ai_tekst = ai_tekst
-        st.session_state.fil_nøkkel = fil_nøkkel
+        st.session_state.fil_nokkel = fil_nokkel
     except anthropic.AuthenticationError:
-        st.error("❌ Ugyldig API-nøkkel. Sjekk nøkkelen i sidepanelet.")
-        ai_tekst = "AI-innsikt ikke tilgjengelig — ugyldig API-nøkkel."
+        st.error("Ugyldig API-nokkel. Sjekk nokkel i sidepanelet.")
+        ai_tekst = "AI-innsikt ikke tilgjengelig - ugyldig API-nokkel."
     except Exception as e:
         st.warning(f"AI-analyse feilet: {e}")
         ai_tekst = "AI-innsikt ikke tilgjengelig."
 else:
     with st.container(border=True):
-        st.markdown(st.session_state.ai_tekst)
-    ai_tekst = st.session_state.ai_tekst
+        st.markdown(st.session_state.get("ai_tekst", ""))
+    ai_tekst = st.session_state.get("ai_tekst", "")
 
 # ── Last ned ──────────────────────────────────────────────────────────────────
-st.markdown("### 📥 Last ned rapport")
+st.markdown("### Last ned rapport")
+
 dl1, dl2 = st.columns(2)
 
 with dl1:
-    txt_innhold = generer_rapport(df, ai_tekst)
-    st.download_button(
-        label="📄 Last ned TXT",
-        data=txt_innhold.encode("utf-8"),
-        file_name="finansrapport.txt",
-        mime="text/plain",
-        use_container_width=True,
-    )
+    try:
+        txt_innhold = generer_rapport(df, ai_tekst)
+        st.download_button(
+            label="Last ned TXT",
+            data=txt_innhold.encode("utf-8"),
+            file_name="finansrapport.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
+    except Exception as e:
+        st.warning(f"Teksteksport feilet: {e}")
 
 with dl2:
     try:
@@ -271,7 +279,7 @@ with dl2:
             pdf_bytes = f.read()
         os.unlink(tmp_sti)
         st.download_button(
-            label="📑 Last ned PDF",
+            label="Last ned PDF",
             data=pdf_bytes,
             file_name="finansrapport.pdf",
             mime="application/pdf",
@@ -280,8 +288,8 @@ with dl2:
     except Exception as e:
         st.warning(f"PDF-eksport feilet: {e}")
 
-# ── Rådata ────────────────────────────────────────────────────────────────────
-with st.expander("🔍 Vis opplastet data"):
+# ── Radata ────────────────────────────────────────────────────────────────────
+with st.expander("Vis opplastet data"):
     st.dataframe(df, use_container_width=True)
 
-st.caption("KABI STARTUP AI — bygget av Karlo Bikic")
+st.caption("KABI STARTUP AI - bygget av Karlo Bikic")

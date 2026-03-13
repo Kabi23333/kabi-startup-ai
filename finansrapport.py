@@ -16,10 +16,6 @@ from datetime import datetime
 import pandas as pd
 import anthropic
 
-# Sikrer UTF-8 output i Windows-terminal
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-
 
 KATEGORI_EMOJIS = {
     "inntekt": "💰",
@@ -357,7 +353,7 @@ def eksporter_pdf(df: pd.DataFrame, ai_tekst: str, ut_fil: str) -> None:
     if not inntekter.empty:
         seksjon("Inntekter per kategori")
         for i, (kat, grp) in enumerate(inntekter.groupby("kategori")):
-            tabell_rad(kat, f"{grp['beloep'].sum():,.0f} kr" if "beloep" in grp else f"{grp['beløp'].sum():,.0f} kr",
+            tabell_rad(kat, f"{grp['beløp'].sum():,.0f} kr",
                        f"{len(grp)} poster", skygge=(i % 2 == 0))
         tabell_rad("Totalt", f"{total_inntekt:,.0f} kr", fet=True)
         pdf.ln(2)
