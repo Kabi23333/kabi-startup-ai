@@ -270,19 +270,25 @@ def lagre_excel_rapport(df, nokkeltal, ai_sammendrag, utfil):
 # ─────────────────────────────────────────────
 
 class RapportPDF(FPDF):
+    def __init__(self):
+        super().__init__()
+        self.add_font("Arial", "", "C:\\Windows\\Fonts\\arial.ttf")
+        self.add_font("Arial", "B", "C:\\Windows\\Fonts\\arialbd.ttf")
+        self.add_font("Arial", "I", "C:\\Windows\\Fonts\\ariali.ttf")
+
     def header(self):
         self.set_fill_color(31, 78, 121)
         self.rect(0, 0, 210, 20, "F")
-        self.set_font("Helvetica", "B", 14)
+        self.set_font("Arial", "B", 14)
         self.set_text_color(255, 255, 255)
         self.set_xy(10, 5)
-        self.cell(0, 10, "KABI AUTOMATION   Automatisk Okonomisk Rapport", align="L")
+        self.cell(0, 10, "KABI AUTOMATION   Automatisk Økonomisk Rapport", align="L")
         self.set_text_color(0, 0, 0)
         self.ln(18)
 
     def footer(self):
         self.set_y(-12)
-        self.set_font("Helvetica", "I", 8)
+        self.set_font("Arial", "I", 8)
         self.set_text_color(128, 128, 128)
         self.cell(0, 5, f"Generert av KABI AUTOMATION  |  {datetime.now().strftime('%d.%m.%Y %H:%M')}  |  Side {self.page_no()}", align="C")
 
@@ -296,15 +302,15 @@ def lagre_pdf_rapport(nokkeltal, ai_sammendrag, df, utfil):
     pdf.add_page()
 
     # ── Dato og fil ──
-    pdf.set_font("Helvetica", "I", 9)
+    pdf.set_font("Arial", "I", 9)
     pdf.set_text_color(100, 100, 100)
     pdf.cell(0, 6, f"Rapport generert: {datetime.now().strftime('%d.%m.%Y kl. %H:%M')}", ln=True)
     pdf.ln(4)
 
-    # ── Nokkeltal-bokser ──
-    pdf.set_font("Helvetica", "B", 11)
+    # ── Nøkkeltall-bokser ──
+    pdf.set_font("Arial", "B", 11)
     pdf.set_text_color(31, 78, 121)
-    pdf.cell(0, 8, "NOKKELTAL", ln=True)
+    pdf.cell(0, 8, "NØKKELTALL", ln=True)
     pdf.ln(2)
 
     def boks(tittel, verdi, farge_rgb, x, y, bredde=58, hoyde=22):
@@ -312,11 +318,11 @@ def lagre_pdf_rapport(nokkeltal, ai_sammendrag, df, utfil):
         pdf.set_fill_color(*farge_rgb)
         pdf.rect(x, y, bredde, hoyde, "F")
         pdf.set_xy(x + 2, y + 2)
-        pdf.set_font("Helvetica", "", 8)
+        pdf.set_font("Arial", "", 8)
         pdf.set_text_color(255, 255, 255)
         pdf.cell(bredde - 4, 5, tittel, ln=True)
         pdf.set_xy(x + 2, y + 8)
-        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_font("Arial", "B", 11)
         pdf.cell(bredde - 4, 9, verdi, ln=True)
 
     y_start = pdf.get_y()
@@ -328,48 +334,40 @@ def lagre_pdf_rapport(nokkeltal, ai_sammendrag, df, utfil):
     pdf.set_y(y_start + 28)
     y_start2 = pdf.get_y()
     boks("MARGIN", f"{nokkeltal['margin']:.1f}%", (87, 87, 87), 10, y_start2)
-    boks("BESTE MANED", nokkeltal["beste_maned"], (46, 125, 50), 72, y_start2)
-    boks("VERSTE MANED", nokkeltal["verste_maned"], (198, 40, 40), 134, y_start2)
+    boks("BESTE MÅNED", nokkeltal["beste_maned"], (46, 125, 50), 72, y_start2)
+    boks("VERSTE MÅNED", nokkeltal["verste_maned"], (198, 40, 40), 134, y_start2)
 
     pdf.set_y(y_start2 + 28)
     pdf.ln(4)
 
-    # ── AI-sammendrag ──
+    # ── AI-analyse ──
     pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_font("Arial", "B", 11)
     pdf.set_text_color(31, 78, 121)
     pdf.cell(0, 8, "AI-ANALYSE", ln=True)
 
     pdf.set_fill_color(222, 234, 241)
     pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font("Arial", "", 9)
 
-    # Beregn hoyden pa boksen basert pa tekst
-    tekstlinjer = ai_sammendrag.replace("\r", "")
-    x_marg = 10
-    bredde = 190
-
-    # Sanitize: fjern tegn fpdf2/Helvetica ikke stoetter (norske bokstaver, lange bindestreker, markdown)
-    def til_pdf_tekst(t):
-        t = t.replace("\u2013", "-").replace("\u2014", "-").replace("\u2019", "'")
-        t = t.replace("\u00e6", "ae").replace("\u00f8", "oe").replace("\u00e5", "aa")
-        t = t.replace("\u00c6", "Ae").replace("\u00d8", "Oe").replace("\u00c5", "Aa")
-        t = t.replace("**", "").replace("##", "").replace("# ", "")
+    # Strip markdown-formatering fra Claude-output
+    def rens_ai_tekst(t):
+        t = t.replace("\r", "")
+        t = t.replace("**", "").replace("## ", "").replace("# ", "")
         return t
 
-    tekstlinjer = til_pdf_tekst(ai_sammendrag.replace("\r", ""))
+    tekstlinjer = rens_ai_tekst(ai_sammendrag)
     x_marg = 10
     bredde = 190
 
     pdf.set_xy(x_marg, pdf.get_y())
     pdf.set_fill_color(222, 234, 241)
-    y_boks_start = pdf.get_y()
     pdf.multi_cell(bredde, 5, tekstlinjer, fill=True)
     pdf.ln(6)
 
     # ── Kategorioversikt ──
     if "Kategori" in df.columns and "Belop" in df.columns:
-        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_font("Arial", "B", 11)
         pdf.set_text_color(31, 78, 121)
         pdf.cell(0, 8, "KATEGORIOVERSIKT", ln=True)
         pdf.ln(2)
@@ -382,20 +380,19 @@ def lagre_pdf_rapport(nokkeltal, ai_sammendrag, df, utfil):
         col_w = [90, 50, 40]
         pdf.set_fill_color(31, 78, 121)
         pdf.set_text_color(255, 255, 255)
-        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_font("Arial", "B", 9)
         pdf.cell(col_w[0], 7, "Kategori", border=0, fill=True)
         pdf.cell(col_w[1], 7, "Totalt (NOK)", border=0, fill=True, align="R")
         pdf.cell(col_w[2], 7, "Type", border=0, fill=True, align="C")
         pdf.ln()
 
-        pdf.set_font("Helvetica", "", 9)
+        pdf.set_font("Arial", "", 9)
         for i, (_, rad) in enumerate(kat_df.iterrows()):
             fill_color = (222, 234, 241) if i % 2 == 0 else (255, 255, 255)
             pdf.set_fill_color(*fill_color)
             pdf.set_text_color(0, 0, 0)
             type_label = "Inntekt" if rad["Totalt"] > 0 else "Utgift"
-            kat_navn = til_pdf_tekst(str(rad["Kategori"]))
-            pdf.cell(col_w[0], 6, kat_navn, border=0, fill=True)
+            pdf.cell(col_w[0], 6, str(rad["Kategori"]), border=0, fill=True)
             pdf.cell(col_w[1], 6, f"{rad['Totalt']:,.0f}", border=0, fill=True, align="R")
             pdf.cell(col_w[2], 6, type_label, border=0, fill=True, align="C")
             pdf.ln()
